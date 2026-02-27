@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Calculadora de Precios Uñas</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-pink-50 p-6">
+
+<div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+
+<h1 class="text-2xl font-bold mb-4 text-center">Calculadora de Servicios 💅</h1>
+
+<!-- Nombre -->
+<label class="block font-semibold">Nombre del cliente:</label>
+<input id="cliente" type="text" class="w-full border p-2 rounded mb-4">
+
+<!-- Técnicas -->
+<h2 class="font-semibold mt-4 mb-2">Técnicas</h2>
+
+<div class="space-y-2">
+<label><input type="radio" name="tecnica" value="250"> Acrílico $250</label><br>
+<label><input type="radio" name="tecnica" value="220"> Gelish manos $220</label><br>
+<label><input type="radio" name="tecnica" value="200"> Gelish pies $200</label><br>
+<label><input type="radio" name="tecnica" value="100"> Gel semipermanente pies (1 o 2 tonos) $100</label><br>
+<label><input type="radio" name="tecnica" value="0" checked> Ninguna</label>
+</div>
+
+<!-- Decoraciones -->
+<h2 class="font-semibold mt-4 mb-2">Decoraciones (precio por uña)</h2>
+
+<div id="decoraciones"></div>
+
+<!-- Extras -->
+<h2 class="font-semibold mt-4 mb-2">Extras</h2>
+
+<label><input type="checkbox" value="50" class="extra"> Retiro de producto $50</label><br>
+<label><input type="checkbox" value="30" class="extra"> Reparación $30</label>
+
+<!-- Total -->
+<h2 class="text-xl font-bold mt-6">Total: $<span id="total">0</span></h2>
+
+<button onclick="generarTicket()" class="mt-4 bg-pink-500 text-white px-4 py-2 rounded w-full">
+Generar Ticket
+</button>
+
+</div>
+
+<script>
+
+const preciosDecoracion = {
+  Cristales: 10,
+  Francesa: 15,
+  Dibujos: 20,
+  Encapsulado: 25
+};
+
+let state = {
+  tecnica: 0,
+  decoraciones: {},
+  extras: 0
+};
+
+const decoracionesDiv = document.getElementById("decoraciones");
+
+for (let nombre in preciosDecoracion) {
+  decoracionesDiv.innerHTML += `
+  <div class="flex justify-between items-center mb-2">
+    <span>${nombre} ($${preciosDecoracion[nombre]})</span>
+    <input type="number" min="0" step="1" value="0"
+      onchange="changeDecoracion('${nombre}', this.value)"
+      class="border w-20 p-1 rounded">
+  </div>
+  `;
+}
+
+document.querySelectorAll("input[name='tecnica']").forEach(radio=>{
+  radio.addEventListener("change", function(){
+    state.tecnica = parseInt(this.value);
+    update();
+  });
+});
+
+document.querySelectorAll(".extra").forEach(check=>{
+  check.addEventListener("change", function(){
+    state.extras += this.checked ? parseInt(this.value) : -parseInt(this.value);
+    update();
+  });
+});
+
+function changeDecoracion(nombre, cantidad){
+  state.decoraciones[nombre] = parseInt(cantidad) || 0;
+  update();
+}
+
+function update(){
+  let total = state.tecnica + state.extras;
+
+  for (let nombre in state.decoraciones){
+    total += state.decoraciones[nombre] * preciosDecoracion[nombre];
+  }
+
+  document.getElementById("total").innerText = total;
+}
+
+function generarTicket(){
+  let cliente = document.getElementById("cliente").value || "Cliente";
+
+  let ticket = `
+  <h2 style="text-align:center;">Ticket de Servicio</h2>
+  <p><strong>Cliente:</strong> ${cliente}</p>
+  <hr>
+  `;
+
+  if(state.tecnica > 0){
+    ticket += `<p>Técnica: $${state.tecnica}</p>`;
+  }
+
+  for (let nombre in state.decoraciones){
+    if(state.decoraciones[nombre] > 0){
+      ticket += `<p>${nombre} x${state.decoraciones[nombre]}</p>`;
+    }
+  }
+
+  if(state.extras > 0){
+    ticket += `<p>Extras: $${state.extras}</p>`;
+  }
+
+  ticket += `
+  <hr>
+  <h3>Total: $${document.getElementById("total").innerText}</h3>
+  `;
+
+  let ventana = window.open("", "", "width=400,height=600");
+  ventana.document.write(ticket);
+  ventana.print();
+}
+
+</script>
+
+</body>
+</html>
