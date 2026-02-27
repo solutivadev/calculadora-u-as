@@ -720,6 +720,13 @@
   }
 
   function selectAcrilico(num, precio, btn) {
+    // Toggle: si ya está seleccionado, deseleccionar
+    if (btn.classList.contains('selected-option')) {
+      clearTecnicaSelection();
+      state.tecnica = null; state.tecnicaPrecio = 0;
+      calculateTotal();
+      return;
+    }
     clearTecnicaSelection();
     state.tecnica = 'Acrílicas #' + num;
     state.tecnicaPrecio = precio;
@@ -730,6 +737,13 @@
   }
 
   function selectForma(forma, precio, btn) {
+    // Toggle: si ya está seleccionado, deseleccionar
+    if (btn.classList.contains('selected-option')) {
+      state.forma = null; state.formaPrecio = 0;
+      btn.classList.remove('selected-option');
+      calculateTotal();
+      return;
+    }
     state.forma = forma; state.formaPrecio = precio;
     document.querySelectorAll('.forma-btn').forEach(b => b.classList.remove('selected-option'));
     btn.classList.add('selected-option');
@@ -742,6 +756,13 @@
   }
 
   function selectTecnicaSimple(tipo, precio, btn) {
+    // Toggle: si ya está seleccionado, deseleccionar
+    if (btn.classList.contains('selected-option')) {
+      clearTecnicaSelection();
+      state.tecnica = null; state.tecnicaPrecio = 0;
+      calculateTotal();
+      return;
+    }
     clearTecnicaSelection();
     const nombres = {
       'bano':'Baño de acrílico','rubber-corta':'Rubber uña corta','rubber-larga':'Rubber uña larga',
@@ -762,6 +783,13 @@
   }
 
   function selectPedicure(tipo, precio, btn) {
+    // Toggle: si ya está seleccionado, deseleccionar
+    if (btn.classList.contains('selected-option')) {
+      state.pedicure = null; state.pedicurePrecio = 0;
+      btn.classList.remove('selected-option');
+      calculateTotal();
+      return;
+    }
     const nombres = { 'sencillo':'Pedicure Sencillo','bomba':'Pedicure Bomba','jelly':'Pedicure JellySpa','gel-pies':'Gel Semipermanente Pies' };
     state.pedicure = nombres[tipo]; state.pedicurePrecio = precio;
     document.querySelectorAll('.pedicure-btn').forEach(b => b.classList.remove('selected-option'));
