@@ -1,2 +1,0 @@
-# calculadora-u-as
-Calculadora
