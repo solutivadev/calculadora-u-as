@@ -820,53 +820,102 @@
   }
 
   function generarTicketPDF() {
-    const { jsPDF } = window.jspdf;
-    const { total, items } = buildSummary();
-    const cliente = document.getElementById('cliente-nombre').value.trim() || 'Sin nombre';
-    const doc = new jsPDF({ unit: 'mm', format: [80, 200], orientation: 'portrait' });
-    const W = 80, M = 6;
-    let y = 10;
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert('El generador de PDF aun esta cargando, intenta de nuevo.');
+      return;
+    }
+    var { total, items } = buildSummary();
+    var cliente = document.getElementById('cliente-nombre').value.trim() || 'Sin nombre';
+    var now = new Date();
+    var fecha = now.toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' });
+    var hora  = now.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
 
-    doc.setFont('helvetica','bold'); doc.setFontSize(14);
-    doc.text('Pretty Nails', W/2, y, { align:'center' }); y += 7;
+    // Calcular altura dinamica
+    var lineH = 7;
+    var totalLines = 0;
+    items.forEach(function(it) {
+      totalLines += Math.ceil(it.label.length / 26) || 1;
+    });
+    if (!items.length) totalLines = 1;
+    var pageHeight = Math.max(70 + (totalLines * lineH) + 35, 120);
 
-    doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    doc.text('Calculadora de Precios', W/2, y, { align:'center' }); y += 5;
+    var { jsPDF } = window.jspdf;
+    var doc = new jsPDF({ unit: 'mm', format: [80, pageHeight], orientation: 'portrait' });
+    var W = doc.internal.pageSize.getWidth();
+    var M = 6;
+    var y = 12;
 
-    const now = new Date();
-    const fecha = now.toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' });
-    const hora  = now.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
-    doc.text('Fecha: ' + fecha + '  Hora: ' + hora, W/2, y, { align:'center' }); y += 5;
+    // Encabezado
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.text('Pretty Nails', W / 2, y, { align: 'center' });
+    y += 7;
 
-    doc.setLineWidth(0.3); doc.line(M, y, W-M, y); y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Calculadora de Precios', W / 2, y, { align: 'center' });
+    y += 5;
 
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text('Cliente: ' + cliente, M, y); y += 6;
+    doc.setFontSize(7);
+    doc.text('Fecha: ' + fecha + '   Hora: ' + hora, W / 2, y, { align: 'center' });
+    y += 5;
 
-    doc.setLineWidth(0.2); doc.line(M, y, W-M, y); y += 4;
+    doc.setDrawColor(139, 90, 43);
+    doc.setLineWidth(0.4);
+    doc.line(M, y, W - M, y);
+    y += 6;
 
-    doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    if (!items.length) { doc.text('Sin servicios seleccionados', M, y); y += 6; }
-    else {
-      for (const it of items) {
-        const lines = doc.splitTextToSize(it.label, 46);
+    // Cliente
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('Cliente: ' + cliente, M, y);
+    y += 6;
+
+    doc.setLineWidth(0.2);
+    doc.line(M, y, W - M, y);
+    y += 5;
+
+    // Items
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+
+    if (!items.length) {
+      doc.text('Sin servicios seleccionados', M, y);
+      y += lineH;
+    } else {
+      items.forEach(function(it) {
+        var maxW = W - M - 16;
+        var lines = doc.splitTextToSize(it.label, maxW);
         doc.text(lines, M, y);
-        doc.text('$' + it.precio, W-M, y, { align:'right' });
-        y += 6 * lines.length;
-      }
+        doc.text('$' + it.precio, W - M, y, { align: 'right' });
+        y += lineH * lines.length;
+      });
     }
 
-    y += 2; doc.setLineWidth(0.4); doc.line(M, y, W-M, y); y += 5;
+    // Total
+    y += 3;
+    doc.setDrawColor(139, 90, 43);
+    doc.setLineWidth(0.5);
+    doc.line(M, y, W - M, y);
+    y += 6;
 
-    doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
     doc.text('TOTAL:', M, y);
-    doc.text('$' + total, W-M, y, { align:'right' }); y += 8;
+    doc.text('$' + total, W - M, y, { align: 'right' });
+    y += 9;
 
-    doc.setFont('helvetica','italic'); doc.setFontSize(7);
-    doc.text('Gracias por tu visita <3', W/2, y, { align:'center' });
+    // Footer
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(7);
+    doc.setTextColor(139, 90, 43);
+    doc.text('Gracias por tu visita <3', W / 2, y, { align: 'center' });
 
-    doc.save('ticket-' + cliente.replace(/\s+/g,'-') + '-' + fecha.replace(/\//g,'-') + '.pdf');
+    var nombreArchivo = 'ticket-' + cliente.replace(/\s+/g, '-') + '-' + fecha.replace(/\//g, '-') + '.pdf';
+    doc.save(nombreArchivo);
   }
+
 
   function resetAll() {
     state = {
