@@ -1,688 +1,187 @@
-<!doctype html>
-<html lang="es" class="h-full">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pretty Nails - Calculadora de Precios</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/_sdk/element_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Montserrat:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
-  <style>
-    * { font-family: 'Montserrat', sans-serif; }
-    h1, h2, h3, .glam-title { font-family: 'Playfair Display', serif; }
-    
-    .glass-card {
-      background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(139, 90, 43, 0.1);
+import { useState } from "react";
+
+interface Decoracion {
+  nombre: string;
+  precio: number;
+}
+
+interface Tecnica {
+  nombre: string;
+  precio: number;
+}
+
+export default function Servicio() {
+  const precioBase = 150;
+
+  const decoracionesBase: Decoracion[] = [
+    { nombre: "Piedras", precio: 10 },
+    { nombre: "Sticker", precio: 5 },
+    { nombre: "Glitter", precio: 8 },
+  ];
+
+  const tecnicas: Tecnica[] = [
+    { nombre: "Acrílico", precio: 50 },
+    { nombre: "Polygel", precio: 40 },
+    { nombre: "Gelish", precio: 30 },
+  ];
+
+  const [cliente, setCliente] = useState("");
+  const [decoraciones, setDecoraciones] = useState<number[]>(
+    Array(decoracionesBase.length).fill(0)
+  );
+  const [tecnicaSeleccionada, setTecnicaSeleccionada] = useState<number | null>(null);
+
+  const aumentar = (index: number) => {
+    const nuevas = [...decoraciones];
+    nuevas[index] += 1; // infinito
+    setDecoraciones(nuevas);
+  };
+
+  const disminuir = (index: number) => {
+    const nuevas = [...decoraciones];
+    if (nuevas[index] > 0) {
+      nuevas[index] -= 1;
     }
-    
-    .selected-option {
-      background: linear-gradient(135deg, #8B5A2B 0%, #6B4423 100%) !important;
-      color: white !important;
-      transform: scale(1.02);
-      box-shadow: 0 8px 25px rgba(139, 90, 43, 0.3);
-    }
-    
-    .option-btn {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .option-btn:hover:not(.selected-option) {
-      background: rgba(139, 90, 43, 0.1);
-      transform: translateY(-2px);
-    }
-    
-    .deco-selected {
-      background: linear-gradient(135deg, #8B5A2B 0%, #6B4423 100%) !important;
-      color: white !important;
-    }
-    
-    .sparkle {
-      position: absolute;
-      width: 4px;
-      height: 4px;
-      background: #D4AF37;
-      border-radius: 50%;
-      animation: sparkle 2s infinite;
-    }
-    
-    @keyframes sparkle {
-      0%, 100% { opacity: 0; transform: scale(0); }
-      50% { opacity: 1; transform: scale(1); }
-    }
-    
-    .gradient-text {
-      background: linear-gradient(135deg, #8B5A2B 0%, #D4AF37 50%, #8B5A2B 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .total-display {
-      background: linear-gradient(135deg, #8B5A2B 0%, #6B4423 100%);
-      box-shadow: 0 10px 40px rgba(139, 90, 43, 0.4);
-    }
-    
-    .section-divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(139, 90, 43, 0.3), transparent);
-    }
-    
-    .counter-btn {
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    
-    .counter-btn:hover {
-      transform: scale(1.1);
-    }
-    
-    .nav-tab {
-      transition: all 0.3s ease;
-    }
-    
-    .nav-tab.active {
-      background: linear-gradient(135deg, #8B5A2B 0%, #6B4423 100%);
-      color: white;
-    }
-    
-    .fade-in {
-      animation: fadeIn 0.4s ease-out;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    setDecoraciones(nuevas);
+  };
+
+  const calcularTotal = () => {
+    let total = precioBase;
+
+    if (tecnicaSeleccionada !== null) {
+      total += tecnicas[tecnicaSeleccionada].precio;
     }
 
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    input[type="number"] { -moz-appearance: textfield; }
-    
-    .scrollbar-thin::-webkit-scrollbar { width: 4px; }
-    .scrollbar-thin::-webkit-scrollbar-track { background: rgba(139, 90, 43, 0.1); border-radius: 10px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(139, 90, 43, 0.3); border-radius: 10px; }
-  </style>
-  <style>body { box-sizing: border-box; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
- </head>
- <body class="h-full overflow-auto" style="background: linear-gradient(145deg, #F5F0EB 0%, #E8DDD4 50%, #F5F0EB 100%);">
-  <div id="app" class="min-h-full pb-32">
-   <!-- Header -->
-   <header class="relative py-6 px-4 text-center">
-    <div class="sparkle" style="top: 20%; left: 15%;"></div>
-    <div class="sparkle" style="top: 30%; right: 20%; animation-delay: 0.5s;"></div>
-    <div class="sparkle" style="top: 60%; left: 25%; animation-delay: 1s;"></div>
-    <div class="inline-block mb-2">
-     <span class="text-3xl">💅</span>
+    decoraciones.forEach((cantidad, index) => {
+      total += cantidad * decoracionesBase[index].precio;
+    });
+
+    return total;
+  };
+
+  const generarTicket = () => {
+    const total = calcularTotal();
+
+    const resumenDecoraciones = decoracionesBase
+      .map((dec, i) =>
+        decoraciones[i] > 0
+          ? `${dec.nombre} x${decoraciones[i]} - $${dec.precio * decoraciones[i]}`
+          : null
+      )
+      .filter(Boolean)
+      .join("\n");
+
+    const tecnicaTexto =
+      tecnicaSeleccionada !== null
+        ? `${tecnicas[tecnicaSeleccionada].nombre} - $${tecnicas[tecnicaSeleccionada].precio}`
+        : "Ninguna";
+
+    const ticket = `
+Cliente: ${cliente || "No especificado"}
+
+Servicio base: $${precioBase}
+Técnica: ${tecnicaTexto}
+
+Decoraciones:
+${resumenDecoraciones || "Ninguna"}
+
+Total: $${total}
+    `;
+
+    alert(ticket);
+  };
+
+  return (
+    <div className="p-6 max-w-xl mx-auto bg-white rounded-2xl shadow-lg space-y-6">
+
+      {/* Nombre del cliente */}
+      <div>
+        <label className="block font-semibold mb-2">
+          Nombre del cliente
+        </label>
+        <input
+          type="text"
+          value={cliente}
+          onChange={(e) => setCliente(e.target.value)}
+          className="w-full border rounded-xl p-3 outline-none"
+          placeholder="Ingresa el nombre"
+        />
+      </div>
+
+      {/* Técnicas */}
+      <div>
+        <h2 className="font-semibold mb-2">Técnica</h2>
+        <div className="space-y-2">
+          {tecnicas.map((tec, index) => (
+            <button
+              key={index}
+              onClick={() => setTecnicaSeleccionada(index)}
+              className={`w-full p-3 rounded-xl border ${
+                tecnicaSeleccionada === index
+                  ? "bg-black text-white"
+                  : "bg-gray-100"
+              }`}
+            >
+              {tec.nombre} - ${tec.precio}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Decoraciones */}
+      <div>
+        <h2 className="font-semibold mb-4">Decoraciones</h2>
+        <div className="space-y-4">
+          {decoracionesBase.map((dec, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between bg-gray-100 p-3 rounded-xl"
+            >
+              <div>
+                <p className="font-medium">{dec.nombre}</p>
+                <p className="text-sm text-gray-500">${dec.precio}</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => disminuir(index)}
+                  className="w-8 h-8 rounded-full bg-gray-300"
+                >
+                  -
+                </button>
+
+                <span className="font-semibold">
+                  {decoraciones[index]}
+                </span>
+
+                <button
+                  onClick={() => aumentar(index)}
+                  className="w-8 h-8 rounded-full bg-gray-300"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Precio y botón generar ticket */}
+      <div className="border-t pt-4 space-y-4">
+        <div className="flex justify-between items-center">
+          <span className="font-bold text-lg">Total:</span>
+          <span className="font-bold text-xl">
+            ${calcularTotal()}
+          </span>
+        </div>
+
+        <button
+          onClick={generarTicket}
+          className="w-full bg-black text-white p-3 rounded-xl font-semibold"
+        >
+          Generar ticket
+        </button>
+      </div>
     </div>
-    <h1 id="salon-name" class="text-3xl md:text-4xl font-bold gradient-text mb-1">💗Pretty Nails💗</h1>
-    <p id="tagline" class="text-sm text-amber-800/70 tracking-widest uppercase">Calculadora de Precios</p>
-   </header><!-- Navigation Tabs -->
-   <nav class="sticky top-0 z-40 px-4 py-3 bg-gradient-to-b from-[#F5F0EB] to-transparent">
-    <div class="flex gap-2 max-w-lg mx-auto overflow-x-auto scrollbar-thin pb-1">
-     <button onclick="showSection('manicure')" class="nav-tab active flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium text-amber-900 bg-white/50 shadow-sm" data-section="manicure"> 💅 Manicure </button> <button onclick="showSection('pedicure')" class="nav-tab flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium text-amber-900 bg-white/50 shadow-sm" data-section="pedicure"> 🦶 Pedicure </button> <button onclick="showSection('extras')" class="nav-tab flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium text-amber-900 bg-white/50 shadow-sm" data-section="extras"> ✨ Extras </button>
-    </div>
-   </nav><!-- Main Content -->
-   <main class="px-4 max-w-2xl mx-auto space-y-4">
-    <!-- MANICURE SECTION -->
-    <div id="section-manicure" class="space-y-4 fade-in">
-     <!-- Técnica Selection -->
-     <section class="glass-card rounded-2xl p-5">
-      <h2 class="glam-title text-xl font-semibold text-amber-900 mb-4 flex items-center gap-2"><span class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-sm">1</span> Técnica</h2>
-      <div class="space-y-3">
-       <!-- Acrílicas -->
-       <div class="border border-amber-200/50 rounded-xl p-4 bg-white/30">
-        <button onclick="toggleTecnica('acrilicas')" class="w-full flex items-center justify-between text-left"> <span class="font-medium text-amber-900">💎 Acrílicas</span> <span id="acrilicas-arrow" class="text-amber-700 transition-transform">▼</span> </button>
-        <div id="acrilicas-options" class="hidden mt-3 space-y-2">
-         <p class="text-xs text-amber-700 mb-2">Selecciona el largo:</p>
-         <div class="grid grid-cols-4 gap-2">
-          <button onclick="selectAcrilico(1, 200)" class="option-btn acrilico-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> #1<br><span class="text-xs font-semibold">$200</span> </button> <button onclick="selectAcrilico(2, 220)" class="option-btn acrilico-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> #2<br><span class="text-xs font-semibold">$220</span> </button> <button onclick="selectAcrilico(3, 240)" class="option-btn acrilico-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> #3<br><span class="text-xs font-semibold">$240</span> </button> <button onclick="selectAcrilico(4, 260)" class="option-btn acrilico-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> #4<br><span class="text-xs font-semibold">$260</span> </button> <button onclick="selectAcrilico(5, 280)" class="option-btn acrilico-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> #5<br><span class="text-xs font-semibold">$280</span> </button> <button onclick="selectAcrilico(6, 300)" class="option-btn acrilico-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> #6<br><span class="text-xs font-semibold">$300</span> </button> <button onclick="selectAcrilico(7, 320)" class="option-btn acrilico-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> #7<br><span class="text-xs font-semibold">$320</span> </button> <button onclick="selectAcrilico(8, 340)" class="option-btn acrilico-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> #8<br><span class="text-xs font-semibold">$340</span> </button>
-         </div>
-        </div>
-       </div><!-- Forma -->
-       <div id="forma-section" class="hidden border border-amber-200/50 rounded-xl p-4 bg-white/30">
-        <p class="font-medium text-amber-900 mb-3">✨ Forma</p>
-        <div class="grid grid-cols-2 gap-2">
-         <button onclick="selectForma('cuadrada', 20)" class="option-btn forma-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> Cuadrada <span class="font-semibold">+$20</span> </button> <button onclick="selectForma('ovalada', 30)" class="option-btn forma-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> Ovalada <span class="font-semibold">+$30</span> </button> <button onclick="selectForma('coffin', 30)" class="option-btn forma-btn px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50"> Coffin <span class="font-semibold">+$30</span> </button>
-        </div><label class="flex items-center gap-2 mt-3 cursor-pointer"> <input type="checkbox" id="acrilico-color" onchange="toggleAcrilicoColor()" class="w-4 h-4 rounded border-amber-300 text-amber-700 focus:ring-amber-500"> <span class="text-sm text-amber-800">+ Acrílico de color (+$20)</span> </label>
-       </div><!-- Baño de Acrílico --> <button onclick="selectTecnicaSimple('bano', 200)" class="option-btn tecnica-btn w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/30 border border-amber-200/50 text-left"> <span class="text-amber-900">🛁 Baño de acrílico <span class="text-xs opacity-70">(del #1)</span></span> <span class="font-semibold text-amber-700">$200</span> </button> <!-- Rubber -->
-       <div class="border border-amber-200/50 rounded-xl p-4 bg-white/30">
-        <button onclick="toggleTecnica('rubber')" class="w-full flex items-center justify-between text-left"> <span class="font-medium text-amber-900">🌸 Rubber</span> <span id="rubber-arrow" class="text-amber-700 transition-transform">▼</span> </button>
-        <div id="rubber-options" class="hidden mt-3 space-y-2">
-         <button onclick="selectTecnicaSimple('rubber-corta', 180)" class="option-btn tecnica-btn w-full px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50 text-left flex justify-between"> <span>Uña natural corta</span> <span class="font-semibold">$180</span> </button> <button onclick="selectTecnicaSimple('rubber-larga', 200)" class="option-btn tecnica-btn w-full px-3 py-2 rounded-lg bg-white/50 text-sm text-amber-900 border border-amber-200/50 text-left flex justify-between"> <span>Uña natural más larga</span> <span class="font-semibold">$200</span> </button>
-        </div>
-       </div><!-- Acrílico con Nivelación Rubber --> <button onclick="selectTecnicaSimple('nivelacion', 230)" class="option-btn tecnica-btn w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/30 border border-amber-200/50 text-left"> <span class="text-amber-900">💫 Acrílico con nivelación Rubber</span> <span class="font-semibold text-amber-700">$230</span> </button> <!-- Retoque Rubber --> <button onclick="selectTecnicaSimple('retoque-rubber', 200)" class="option-btn tecnica-btn w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/30 border border-amber-200/50 text-left"> <span class="text-amber-900">🔄 Retoque de Rubber</span> <span class="font-semibold text-amber-700">$200</span> </button> <!-- Gel Semipermanente --> <button onclick="selectTecnicaSimple('gel', 150)" class="option-btn tecnica-btn w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/30 border border-amber-200/50 text-left"> <span class="text-amber-900">✨ Gel Semipermanente <span class="text-xs opacity-70">(1-2 tonos)</span></span> <span class="font-semibold text-amber-700">$150</span> </button> <!-- Gel Pies --> <button onclick="selectTecnicaSimple('gel-pies-manos', 100)" class="option-btn tecnica-btn w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/30 border border-amber-200/50 text-left"> <span class="text-amber-900">✨ Gel Semipermanente Pies</span> <span class="font-semibold text-amber-700">$100</span> </button>
-      </div>
-     </section><!-- Decoraciones -->
-     <section class="glass-card rounded-2xl p-5">
-      <h2 class="glam-title text-xl font-semibold text-amber-900 mb-2 flex items-center gap-2"><span class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-sm">2</span> Decoraciones</h2>
-      <p class="text-xs text-amber-700 mb-4">Selecciona cuántas uñas con cada decoración</p>
-      <div class="grid grid-cols-1 gap-2 max-h-80 overflow-y-auto scrollbar-thin pr-2">
-       <!-- Decoraciones individuales -->
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Espejo</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('espejo', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-espejo" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('espejo', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Ojo de gato</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('ojodegato', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-ojodegato" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('ojodegato', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Suéter</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('sueter', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-sueter" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('sueter', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Aura</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('aura', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-aura" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('aura', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Glitter</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('glitter', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-glitter" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('glitter', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Blooming</span> <span class="text-xs text-amber-700 w-12 text-right">$10/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('blooming', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-blooming" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('blooming', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Mármol</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('marmol', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-marmol" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('marmol', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Carey</span> <span class="text-xs text-amber-700 w-12 text-right">$10/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('carey', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-carey" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('carey', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Relieve</span> <span class="text-xs text-amber-700 w-12 text-right">$10/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('relieve', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-relieve" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('relieve', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">French</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('french', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-french" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('french', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">BabyBoomer</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('babyboomer', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-babyboomer" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('babyboomer', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Charms</span> <span class="text-xs text-amber-700 w-12 text-right">$10/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('charms', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-charms" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('charms', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Cristales pequeños</span> <span class="text-xs text-amber-700 w-12 text-right">$1/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('cristales-peq', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-cristales-peq" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('cristales-peq', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Cristales de figuras</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('cristales-fig', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-cristales-fig" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('cristales-fig', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Foil / Hoja de oro</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('foil', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-foil" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('foil', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Stickers</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('stickers', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-stickers" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('stickers', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Mano alzada simple</span> <span class="text-xs text-amber-700 w-12 text-right">$20/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('mano-simple', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-mano-simple" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('mano-simple', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Mano alzada complicado</span> <span class="text-xs text-amber-700 w-12 text-right">$10/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('mano-comp', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-mano-comp" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('mano-comp', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">3D</span> <span class="text-xs text-amber-700 w-12 text-right">$15/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('3d', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-3d" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('3d', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Perlas</span> <span class="text-xs text-amber-700 w-12 text-right">$5/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('perlas', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-perlas" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('perlas', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Flores 3D</span> <span class="text-xs text-amber-700 w-12 text-right">$10/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('flores3d', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-flores3d" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('flores3d', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Encapsulado</span> <span class="text-xs text-amber-700 w-12 text-right">$15/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('encapsulado', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-encapsulado" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('encapsulado', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-       <div class="deco-item flex items-center justify-between px-3 py-2 rounded-lg bg-white/40 border border-amber-100">
-        <span class="text-sm text-amber-900 flex-1">Uña completa de cristales</span> <span class="text-xs text-amber-700 w-12 text-right">$50/uña</span>
-        <div class="flex items-center gap-2 ml-3">
-         <button onclick="updateDeco('cristales-full', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="deco-cristales-full" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateDeco('cristales-full', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div>
-      </div>
-     </section>
-    </div><!-- PEDICURE SECTION -->
-    <div id="section-pedicure" class="hidden space-y-4 fade-in">
-     <section class="glass-card rounded-2xl p-5">
-      <h2 class="glam-title text-xl font-semibold text-amber-900 mb-4 flex items-center gap-2"><span class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-sm">🦶</span> Pedicure</h2>
-      <div class="space-y-2">
-       <button onclick="selectPedicure('sencillo', 260)" class="option-btn pedicure-btn w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/30 border border-amber-200/50 text-left"> <span class="text-amber-900">Sencillo <span class="text-xs opacity-70">(1-2 tonos)</span></span> <span class="font-semibold text-amber-700">$260</span> </button> <button onclick="selectPedicure('bomba', 300)" class="option-btn pedicure-btn w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/30 border border-amber-200/50 text-left"> <span class="text-amber-900">Bomba efervescente</span> <span class="font-semibold text-amber-700">$300</span> </button> <button onclick="selectPedicure('jelly', 320)" class="option-btn pedicure-btn w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/30 border border-amber-200/50 text-left"> <span class="text-amber-900">JellySpa</span> <span class="font-semibold text-amber-700">$320</span> </button> <button onclick="selectPedicure('gel-pies', 100)" class="option-btn pedicure-btn w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/30 border border-amber-200/50 text-left"> <span class="text-amber-900">✨ Gel Semipermanente Pies</span> <span class="font-semibold text-amber-700">$100</span> </button>
-      </div>
-      <div class="mt-4 pt-4 border-t border-amber-200/30 space-y-2">
-       <p class="text-sm font-medium text-amber-800 mb-2">Extras de pedicure:</p><label class="flex items-center justify-between px-3 py-2 rounded-lg bg-white/30 cursor-pointer"> <span class="text-sm text-amber-900">+ Acrílico en 2 uñas</span>
-        <div class="flex items-center gap-2">
-         <span class="text-sm font-semibold text-amber-700">+$50</span> <input type="checkbox" id="pedi-acrilico-2" onchange="updatePedicureExtras()" class="w-4 h-4 rounded border-amber-300 text-amber-700 focus:ring-amber-500">
-        </div></label> <label class="flex items-center justify-between px-3 py-2 rounded-lg bg-white/30 cursor-pointer"> <span class="text-sm text-amber-900">+ Acrílico en todas las uñas</span>
-        <div class="flex items-center gap-2">
-         <span class="text-sm font-semibold text-amber-700">+$130</span> <input type="checkbox" id="pedi-acrilico-all" onchange="updatePedicureExtras()" class="w-4 h-4 rounded border-amber-300 text-amber-700 focus:ring-amber-500">
-        </div></label> <label class="flex items-center justify-between px-3 py-2 rounded-lg bg-white/30 cursor-pointer"> <span class="text-sm text-amber-900">+ Decoración extra</span>
-        <div class="flex items-center gap-2">
-         <span class="text-sm font-semibold text-amber-700">+$20</span> <input type="checkbox" id="pedi-deco" onchange="updatePedicureExtras()" class="w-4 h-4 rounded border-amber-300 text-amber-700 focus:ring-amber-500">
-        </div></label>
-      </div>
-     </section>
-    </div><!-- EXTRAS SECTION -->
-    <div id="section-extras" class="hidden space-y-4 fade-in">
-     <section class="glass-card rounded-2xl p-5">
-      <h2 class="glam-title text-xl font-semibold text-amber-900 mb-4 flex items-center gap-2"><span class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-sm">✨</span> Servicios Extras</h2>
-      <div class="space-y-3">
-       <div class="flex items-center justify-between px-3 py-3 rounded-lg bg-white/30 border border-amber-200/50">
-        <div>
-         <span class="text-sm text-amber-900">Reposición de uñas</span> <span class="text-xs text-amber-600 block">$20 por uña</span>
-        </div>
-        <div class="flex items-center gap-2">
-         <button onclick="updateExtra('reposicion', -1)" class="counter-btn bg-amber-100 text-amber-800 hover:bg-amber-200">−</button> <span id="extra-reposicion" class="w-6 text-center text-sm font-medium text-amber-900">0</span> <button onclick="updateExtra('reposicion', 1)" class="counter-btn bg-amber-700 text-white hover:bg-amber-600">+</button>
-        </div>
-       </div><label class="flex items-center justify-between px-3 py-3 rounded-lg bg-white/30 border border-amber-200/50 cursor-pointer"> <span class="text-sm text-amber-900">Cambio de forma</span>
-        <div class="flex items-center gap-2">
-         <span class="text-sm font-semibold text-amber-700">$50</span> <input type="checkbox" id="extra-cambio-forma" onchange="updateExtrasCheckbox()" class="w-4 h-4 rounded border-amber-300 text-amber-700 focus:ring-amber-500">
-        </div></label> <label class="flex items-center justify-between px-3 py-3 rounded-lg bg-white/30 border border-amber-200/50 cursor-pointer"> <span class="text-sm text-amber-900">Retiro de acrílico</span>
-        <div class="flex items-center gap-2">
-         <span class="text-sm font-semibold text-amber-700">$100</span> <input type="checkbox" id="extra-retiro-acrilico" onchange="updateExtrasCheckbox()" class="w-4 h-4 rounded border-amber-300 text-amber-700 focus:ring-amber-500">
-        </div></label> <label class="flex items-center justify-between px-3 py-3 rounded-lg bg-white/30 border border-amber-200/50 cursor-pointer"> <span class="text-sm text-amber-900">Retiro de Rubber</span>
-        <div class="flex items-center gap-2">
-         <span class="text-sm font-semibold text-amber-700">$70</span> <input type="checkbox" id="extra-retiro-rubber" onchange="updateExtrasCheckbox()" class="w-4 h-4 rounded border-amber-300 text-amber-700 focus:ring-amber-500">
-        </div></label> <label class="flex items-center justify-between px-3 py-3 rounded-lg bg-white/30 border border-amber-200/50 cursor-pointer"> <span class="text-sm text-amber-900">Retoque</span>
-        <div class="flex items-center gap-2">
-         <span class="text-sm font-semibold text-amber-700">$200</span> <input type="checkbox" id="extra-retoque" onchange="updateExtrasCheckbox()" class="w-4 h-4 rounded border-amber-300 text-amber-700 focus:ring-amber-500">
-        </div></label>
-      </div>
-     </section>
-    </div>
-   </main><!-- Fixed Total Bar -->
-   <div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#F5F0EB] via-[#F5F0EB] to-transparent pt-8">
-    <div class="max-w-2xl mx-auto">
-     <div class="total-display rounded-2xl p-4 text-white">
-      <div class="flex items-center justify-between">
-       <div>
-        <p class="text-xs uppercase tracking-wider opacity-80">Total estimado</p>
-        <p id="total-display" class="text-3xl font-bold">$0</p>
-       </div><button onclick="resetAll()" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-sm font-medium transition-all"> Nueva Cotización </button>
-      </div>
-      <div id="summary" class="mt-3 pt-3 border-t border-white/20 text-xs space-y-1 max-h-24 overflow-y-auto scrollbar-thin"></div>
-     </div>
-    </div>
-   </div>
-  </div>
-  <script>
-    // Configuration and state
-    const defaultConfig = {
-      salon_name: '💗Pretty Nails💗',
-      tagline: 'Calculadora de Precios',
-      background_color: '#F5F0EB',
-      surface_color: '#FFFFFF',
-      text_color: '#78350F',
-      primary_color: '#8B5A2B',
-      secondary_color: '#D4AF37'
-    };
-
-    let config = { ...defaultConfig };
-
-    // Pricing state
-    let state = {
-      tecnica: null,
-      tecnicaPrecio: 0,
-      forma: null,
-      formaPrecio: 0,
-      acrilicoColor: false,
-      decoraciones: {},
-      pedicure: null,
-      pedicurePrecio: 0,
-      pedicureExtras: 0,
-      extras: {
-        reposicion: 0
-      },
-      extrasCheckbox: {
-        cambioForma: false,
-        retiroAcrilico: false,
-        retiroRubber: false,
-        retoque: false
-      }
-    };
-
-    // Decoration prices
-    const decoPrices = {
-      'espejo': 5, 'ojodegato': 5, 'sueter': 5, 'aura': 5, 'glitter': 5,
-      'blooming': 10, 'marmol': 5, 'carey': 10, 'relieve': 10, 'french': 5,
-      'babyboomer': 5, 'charms': 10, 'cristales-peq': 1, 'cristales-fig': 5,
-      'foil': 5, 'stickers': 5, 'mano-simple': 20, 'mano-comp': 10, '3d': 15,
-      'perlas': 5, 'flores3d': 10, 'encapsulado': 15, 'cristales-full': 50
-    };
-
-    // Navigation
-    function showSection(section) {
-      document.querySelectorAll('[id^="section-"]').forEach(s => s.classList.add('hidden'));
-      document.getElementById(`section-${section}`).classList.remove('hidden');
-      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-      document.querySelector(`[data-section="${section}"]`).classList.add('active');
-    }
-
-    // Técnica functions
-    function toggleTecnica(type) {
-      const options = document.getElementById(`${type}-options`);
-      const arrow = document.getElementById(`${type}-arrow`);
-      options.classList.toggle('hidden');
-      arrow.style.transform = options.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-    }
-
-    function selectAcrilico(num, precio) {
-      clearTecnicaSelection();
-      state.tecnica = `Acrílicas #${num}`;
-      state.tecnicaPrecio = precio;
-      document.querySelectorAll('.acrilico-btn').forEach(b => b.classList.remove('selected-option'));
-      event.target.closest('button').classList.add('selected-option');
-      document.getElementById('forma-section').classList.remove('hidden');
-      calculateTotal();
-    }
-
-    function selectForma(forma, precio) {
-      state.forma = forma.charAt(0).toUpperCase() + forma.slice(1);
-      state.formaPrecio = precio;
-      document.querySelectorAll('.forma-btn').forEach(b => b.classList.remove('selected-option'));
-      event.target.closest('button').classList.add('selected-option');
-      calculateTotal();
-    }
-
-    function toggleAcrilicoColor() {
-      state.acrilicoColor = document.getElementById('acrilico-color').checked;
-      calculateTotal();
-    }
-
-    function selectTecnicaSimple(tipo, precio) {
-      clearTecnicaSelection();
-      const nombres = {
-        'bano': 'Baño de acrílico',
-        'rubber-corta': 'Rubber uña corta',
-        'rubber-larga': 'Rubber uña larga',
-        'nivelacion': 'Acrílico con nivelación Rubber',
-        'retoque-rubber': 'Retoque de Rubber',
-        'gel': 'Gel Semipermanente',
-        'gel-pies-manos': 'Gel Semipermanente Pies'
-      };
-      state.tecnica = nombres[tipo];
-      state.tecnicaPrecio = precio;
-      document.querySelectorAll('.tecnica-btn').forEach(b => b.classList.remove('selected-option'));
-      event.target.closest('button').classList.add('selected-option');
-      document.getElementById('forma-section').classList.add('hidden');
-      calculateTotal();
-    }
-
-    function clearTecnicaSelection() {
-      state.forma = null;
-      state.formaPrecio = 0;
-      state.acrilicoColor = false;
-      document.getElementById('acrilico-color').checked = false;
-      document.querySelectorAll('.acrilico-btn, .tecnica-btn, .forma-btn').forEach(b => b.classList.remove('selected-option'));
-    }
-
-    // Decoraciones
-    function updateDeco(deco, delta) {
-      if (!state.decoraciones[deco]) state.decoraciones[deco] = 0;
-      state.decoraciones[deco] = Math.max(0, Math.min(10, state.decoraciones[deco] + delta));
-      document.getElementById(`deco-${deco}`).textContent = state.decoraciones[deco];
-      calculateTotal();
-    }
-
-    // Pedicure
-    function selectPedicure(tipo, precio) {
-      const nombres = {
-        'sencillo': 'Pedicure Sencillo',
-        'bomba': 'Pedicure Bomba',
-        'jelly': 'Pedicure JellySpa',
-        'gel-pies': 'Gel Semipermanente Pies'
-      };
-      state.pedicure = nombres[tipo];
-      state.pedicurePrecio = precio;
-      document.querySelectorAll('.pedicure-btn').forEach(b => b.classList.remove('selected-option'));
-      event.target.closest('button').classList.add('selected-option');
-      calculateTotal();
-    }
-
-    function updatePedicureExtras() {
-      const acrilico2 = document.getElementById('pedi-acrilico-2').checked;
-      const acrilicoAll = document.getElementById('pedi-acrilico-all').checked;
-      const deco = document.getElementById('pedi-deco').checked;
-      
-      if (acrilico2 && acrilicoAll) {
-        document.getElementById('pedi-acrilico-2').checked = false;
-      }
-      
-      state.pedicureExtras = 0;
-      if (document.getElementById('pedi-acrilico-2').checked) state.pedicureExtras += 50;
-      if (acrilicoAll) state.pedicureExtras += 130;
-      if (deco) state.pedicureExtras += 20;
-      
-      calculateTotal();
-    }
-
-    // Extras
-    function updateExtra(extra, delta) {
-      state.extras[extra] = Math.max(0, Math.min(10, state.extras[extra] + delta));
-      document.getElementById(`extra-${extra}`).textContent = state.extras[extra];
-      calculateTotal();
-    }
-
-    function updateExtrasCheckbox() {
-      state.extrasCheckbox.cambioForma = document.getElementById('extra-cambio-forma').checked;
-      state.extrasCheckbox.retiroAcrilico = document.getElementById('extra-retiro-acrilico').checked;
-      state.extrasCheckbox.retiroRubber = document.getElementById('extra-retiro-rubber').checked;
-      state.extrasCheckbox.retoque = document.getElementById('extra-retoque').checked;
-      calculateTotal();
-    }
-
-    // Calculate total
-    function calculateTotal() {
-      let total = 0;
-      let summary = [];
-
-      // Técnica
-      if (state.tecnicaPrecio > 0) {
-        total += state.tecnicaPrecio;
-        summary.push(`${state.tecnica}: $${state.tecnicaPrecio}`);
-      }
-
-      // Forma
-      if (state.formaPrecio > 0) {
-        total += state.formaPrecio;
-        summary.push(`Forma ${state.forma}: +$${state.formaPrecio}`);
-      }
-
-      // Acrílico color
-      if (state.acrilicoColor) {
-        total += 20;
-        summary.push('Acrílico de color: +$20');
-      }
-
-      // Decoraciones
-      let decoTotal = 0;
-      for (const [deco, qty] of Object.entries(state.decoraciones)) {
-        if (qty > 0) {
-          const cost = qty * decoPrices[deco];
-          decoTotal += cost;
-        }
-      }
-      if (decoTotal > 0) {
-        total += decoTotal;
-        summary.push(`Decoraciones: +$${decoTotal}`);
-      }
-
-      // Pedicure
-      if (state.pedicurePrecio > 0) {
-        total += state.pedicurePrecio;
-        summary.push(`${state.pedicure}: $${state.pedicurePrecio}`);
-      }
-
-      if (state.pedicureExtras > 0) {
-        total += state.pedicureExtras;
-        summary.push(`Extras pedicure: +$${state.pedicureExtras}`);
-      }
-
-      // Extras
-      if (state.extras.reposicion > 0) {
-        const cost = state.extras.reposicion * 20;
-        total += cost;
-        summary.push(`Reposición (${state.extras.reposicion}): +$${cost}`);
-      }
-
-      if (state.extrasCheckbox.cambioForma) {
-        total += 50;
-        summary.push('Cambio de forma: +$50');
-      }
-      if (state.extrasCheckbox.retiroAcrilico) {
-        total += 100;
-        summary.push('Retiro acrílico: +$100');
-      }
-      if (state.extrasCheckbox.retiroRubber) {
-        total += 70;
-        summary.push('Retiro Rubber: +$70');
-      }
-      if (state.extrasCheckbox.retoque) {
-        total += 200;
-        summary.push('Retoque: +$200');
-      }
-
-      document.getElementById('total-display').textContent = `$${total}`;
-      document.getElementById('summary').innerHTML = summary.length > 0 
-        ? summary.map(s => `<p class="opacity-90">• ${s}</p>`).join('')
-        : '<p class="opacity-70">Selecciona tus servicios</p>';
-    }
-
-    // Reset
-    function resetAll() {
-      state = {
-        tecnica: null,
-        tecnicaPrecio: 0,
-        forma: null,
-        formaPrecio: 0,
-        acrilicoColor: false,
-        decoraciones: {},
-        pedicure: null,
-        pedicurePrecio: 0,
-        pedicureExtras: 0,
-        extras: { reposicion: 0 },
-        extrasCheckbox: {
-          cambioForma: false,
-          retiroAcrilico: false,
-          retiroRubber: false,
-          retoque: false
-        }
-      };
-
-      // Reset UI
-      document.querySelectorAll('.selected-option').forEach(el => el.classList.remove('selected-option'));
-      document.querySelectorAll('[id^="deco-"]').forEach(el => el.textContent = '0');
-      document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
-      document.getElementById('extra-reposicion').textContent = '0';
-      document.getElementById('forma-section').classList.add('hidden');
-      document.getElementById('acrilicas-options').classList.add('hidden');
-      document.getElementById('rubber-options').classList.add('hidden');
-      
-      calculateTotal();
-      showSection('manicure');
-    }
-
-    // Element SDK integration
-    if (window.elementSdk) {
-      window.elementSdk.init({
-        defaultConfig,
-        onConfigChange: async (newConfig) => {
-          config = { ...config, ...newConfig };
-          document.getElementById('salon-name').textContent = config.salon_name || defaultConfig.salon_name;
-          document.getElementById('tagline').textContent = config.tagline || defaultConfig.tagline;
-        },
-        mapToCapabilities: (config) => ({
-          recolorables: [
-            {
-              get: () => config.primary_color || defaultConfig.primary_color,
-              set: (value) => window.elementSdk.setConfig({ primary_color: value })
-            },
-            {
-              get: () => config.background_color || defaultConfig.background_color,
-              set: (value) => window.elementSdk.setConfig({ background_color: value })
-            }
-          ],
-          borderables: [],
-          fontEditable: undefined,
-          fontSizeable: undefined
-        }),
-        mapToEditPanelValues: (config) => new Map([
-          ['salon_name', config.salon_name || defaultConfig.salon_name],
-          ['tagline', config.tagline || defaultConfig.tagline]
-        ])
-      });
-    }
-
-    // Initialize
-    calculateTotal();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d44c21191b25638',t:'MTc3MjE2NDY0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-</html>
+  );
+}
